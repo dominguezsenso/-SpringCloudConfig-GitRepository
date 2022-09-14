@@ -1,0 +1,33 @@
+server:
+  port: 8060
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true #Enable integration with the discovery server for the routes
+      routes: #defining the route rules
+        - id: openapi
+          uri: http://localhost:${server.port}
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<path>.*), /$\{path}/v3/api-docs
+        - id: accounts-service
+          uri: lb://accounts-service
+          predicates:
+            - Path=/accounts/**
+          filters:
+            - RewritePath=/accounts/(?<path>.*), /$\{path}
+#The URL of the Eureka Service process
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: accounts
+        url: /v3/api-docs/accounts
